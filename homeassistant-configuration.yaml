@@ -1,0 +1,22 @@
+sensor:
+  - platform: mqtt
+    name: "TempProbe1 Temperature"
+    state_topic: "house/temp-probe1/value"
+    unit_of_measurement: "F"
+    value_template: "{{ value_json.temp_f }}"
+    availability:
+      - topic: "house/temp-probe1/status"
+    payload_available: "online"
+    payload_not_available: "offline"
+    json_attributes_topic: "house/temp-probe1/attributes"
+  - platform: mqtt
+    name: "TempProbe1 Relative humidity"
+    state_topic: "house/temp-probe1/value"
+    unit_of_measurement: "%"
+    value_template: "{{ value_json.relative_humidity }}"
+    availability:
+      - topic: "house/temp-probe1/status"
+    payload_available: "online"
+    payload_not_available: "offline"
+    json_attributes_topic: "house/temp-probe1/attributes"
+
