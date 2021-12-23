@@ -10,7 +10,7 @@ Restart=always
 #ExecStartPre=/bin/mkdir -p /var/run/temp-probe
 PIDFile=/var/run/temp-probe/service.pid
 WorkingDirectory=/home/pi/temp-probe-python
-ExecStart=/usr/bin/python3 /home/pi/temp-probe-python/read-data.py
+ExecStart=/usr/bin/python3 /home/pi/temp-probe-python/temp-probe.py
 
 [Install]
 WantedBy=multi-user.target
