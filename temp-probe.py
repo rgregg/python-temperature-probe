@@ -16,12 +16,12 @@ class ProbeConfig:
    def __init__(self):
       self.broker="192.168.42.65"
       self.port=1883
-      self.topic="house/temp-probe1"
+      self.topic="house/temp-probe1/value"
       self.status_topic="house/temp-probe1/status"
       self.client_name="control1"
       self.offline_status="offline"
       self.online_status="online"
-      self.log_to_console=True
+      self.log_to_console=False
       self.seconds_between_readings = 60
 
 class ProbeReading:
@@ -121,3 +121,7 @@ if __name__ == '__main__':
    reader = TempProbeReader(config)
    reader.run_loop()
    logging.info(f"TempProbeReader exited gracefully.")
+
+
+
+
