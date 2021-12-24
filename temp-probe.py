@@ -93,16 +93,16 @@ class TempProbeReader:
          # implement main loop here
          reading = self.read_probe()
          data = reading.json()
-         self.publish_topic(mqttc, self.config.topic, data)
+         self.publish_topic(mqttc, self.config.topic, data, False)
          # sleep until next iteration of loop
          value = exit.wait(self.config.seconds_between_readings)
          self.logger.debug(f"event wait returned {value}")
-      self.publish_topic(mqttc, self.config.status_topic, self.config.offline_status)
+      self.publish_topic(mqttc, self.config.status_topic, self.config.offline_status, True)
       mqttc.disconnect()
       mqttc.loop_stop()
 
-   def publish_topic(self, client, topic, data):
-      result = client.publish(topic, data, self.QOS1)
+   def publish_topic(self, client, topic, data, retain):
+      result = client.publish(topic, data, self.QOS1, retain)
       if result.rc == paho.MQTT_ERR_SUCCESS:
          self.logger.info(f"MQTT published topic '{topic}' with '{data}'. Result: {result.rc}")
       elif result.rc == paho.MQTT_ERR_NO_CONN:
@@ -120,9 +120,9 @@ class TempProbeReader:
       # Connect to broker
       mqttc.connect(config.broker,config.port)
       mqttc.loop_start()
-      ret = mqttc.publish(config.status_topic, config.online_status, self.QOS1)
+      ret = mqttc.publish(config.status_topic, config.online_status, self.QOS1, True)
       # Configure LWT message for unexpected disconnect
-      mqttc.will_set(config.status_topic, config.offline_status, self.QOS1)
+      mqttc.will_set(config.status_topic, config.offline_status, self.QOS1, True)
       return mqttc
 
    def init_probe(self):
