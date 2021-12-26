@@ -13,7 +13,8 @@ sudo apt-get install python3-pip
 pip3 install RPI.GPIO
 pip3 install adafruit-blinka
 pip3 install adafruit-circuitpython-si7021
-pip install paho-mqtt
+pip3 install paho-mqtt
+pip3 install pyyaml
 ```
 
 ## Configuration
