@@ -7,10 +7,10 @@ class MqttClient:
         self.logger = logger
         self.config = config
         self.client = self.init_mqtt()
-        
+        self.publish_topic(self.config.status_topic, self.config.online_status, True)
 
     def on_publish(self,client,userdata,rc):
-        self.logger.info("mqtt data published")
+        self.logger.info(f"mqtt data published: {rc}")
 
     def on_disconnect(self, client, userdata, rc):
         self.logger.debug(f"mqtt on_disconnect {client}, {userdata}, {rc}")
@@ -22,7 +22,7 @@ class MqttClient:
     def publish_topic(self, topic, data, retain):
         result = self.client.publish(topic, data, self.QOS1, retain)
         if result.rc == paho.MQTT_ERR_SUCCESS:
-            self.logger.info(f"MQTT published topic '{topic}' with '{data}'. Result: {result.rc}")
+            self.logger.info(f"MQTT published {result.mid} topic '{topic}' with '{data}'. Result: {result.rc}")
         elif result.rc == paho.MQTT_ERR_NO_CONN:
             self.logger.error("MQTT is not connected to a broker.")
             self.client.reconnect()
@@ -33,7 +33,6 @@ class MqttClient:
         self.client.disconnect()
         self.client.loop_stop()
 
-
     def init_mqtt(self):
         self.logger.info("Connecting to mqtt broker")
         mqttc = paho.Client(self.config.client_name)
@@ -42,7 +41,6 @@ class MqttClient:
         # Connect to broker
         mqttc.connect(self.config.broker,self.config.port)
         mqttc.loop_start()
-        ret = mqttc.publish(self.config.status_topic, self.config.online_status, self.QOS1, True)
         # Configure LWT message for unexpected disconnect
         mqttc.will_set(self.config.status_topic, self.config.offline_status, self.QOS1, True)
         return mqttc

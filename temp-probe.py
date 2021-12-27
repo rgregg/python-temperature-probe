@@ -3,44 +3,51 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import signal
 from threading import Event
-import config
-import mqtt_client
-import probe_reader
+from appconfig import AppConfig
+from mqtt_client import MqttClient
+import dimport
 
 class ProbeReporterApp:
    def __init__(self, config):
+      self.config = config
       self.logger = self.enable_logging()
       self.exit = Event()
-      self.mqttc = mqtt_client.MqttClient(config, self.logger)
-      self.config = config
+      self.mqttc = MqttClient(config, self.logger)
       
       signal.signal(signal.SIGINT, self.exit_gracefully)
       signal.signal(signal.SIGTERM, self.exit_gracefully)
 
    def enable_logging(self):
-      logger = logging.getLogger('rotating logs')
+      logger = logging.getLogger('probe-reporter')
       logger.setLevel(logging.INFO)
-
       handler = TimedRotatingFileHandler(self.config.log_path,
                                     when='d',
                                     interval=1,
                                     backupCount=7)
       logger.addHandler(handler)
-      if config.log_to_console:
+      if appconfig.log_to_console:
          logger.addHandler(logging.StreamHandler(sys.stdout))
       return logger
 
    def exit_gracefully(self, *args):
       self.logger.info(f"Interrupted by {args}")
-      self.exit.set();
+      self.exit.set()
 
    def run_loop(self):
-      config = self.config;
-      exit = self.exit;
-      probe = ProbeReader(self.logger)
-      
+      config = self.config
+      exit = self.exit
+
+      probe = None
+      if self.config.simulate_probe:
+         probe = dimport.dynload("probe_simulator", "ProbeSimulator", self.logger)
+      else:
+         probe = dimport.dynland("probe_reader", "ProbeReader", self.logger)
+
       while not exit.is_set():
          reading = probe.read()
+         self.logger.info(f"{reading.date_time_utc} - temp {reading.temp_c:.1f} C / {reading.temp_f:.1f} F" \
+                          f" - humidity {reading.relative_humidity:.1f} %")
+
          data = reading.json()
          self.mqttc.publish_topic(config.topic, data, False)
          exit.wait(config.seconds_between_readings)
@@ -49,9 +56,11 @@ class ProbeReporterApp:
       self.mqttc.disconnect()
 
 if __name__ == '__main__':
-   config = AppConfig()
-   config.load()
-   reader = ProbeReporterApp(config)
+   appconfig = AppConfig()
+   appconfig.load()
+   print(appconfig.json())
+
+   reader = ProbeReporterApp(appconfig)
    reader.run_loop()
    reader.logger.info(f"ProbeReporterApp exited gracefully.")
 
