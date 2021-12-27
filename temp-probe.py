@@ -19,12 +19,14 @@ class ProbeReporterApp:
 
    def enable_logging(self):
       logger = logging.getLogger('probe-reporter')
+      logger.propagate = False
       logger.setLevel(logging.INFO)
       handler = TimedRotatingFileHandler(self.config.log_path,
                                     when='d',
                                     interval=1,
                                     backupCount=7)
       logger.addHandler(handler)
+      
       if appconfig.log_to_console:
          logger.addHandler(logging.StreamHandler(sys.stdout))
       return logger
@@ -58,7 +60,6 @@ class ProbeReporterApp:
 if __name__ == '__main__':
    appconfig = AppConfig()
    appconfig.load()
-   print(appconfig.json())
 
    reader = ProbeReporterApp(appconfig)
    reader.run_loop()
