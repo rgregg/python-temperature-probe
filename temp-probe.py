@@ -41,7 +41,7 @@ class ProbeReporterApp:
       if self.config.simulate_probe:
          probe = dimport.dynload("probe_simulator", "ProbeSimulator", self.logger)
       else:
-         probe = dimport.dynland("probe_reader", "ProbeReader", self.logger)
+         probe = dimport.dynload("probe_reader", "ProbeReader", self.logger)
 
       while not exit.is_set():
          reading = probe.read()
