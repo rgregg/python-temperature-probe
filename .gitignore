@@ -1,2 +1,4 @@
 gcp_keys.json
 temp-probe.log
+logs/
+__pycache__
