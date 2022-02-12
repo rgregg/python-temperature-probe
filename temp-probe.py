@@ -51,6 +51,7 @@ class ProbeReporterApp:
                           f" - humidity {reading.relative_humidity:.1f} %")
 
          data = reading.json()
+         self.mqttc.publish_topic(config.status_topic, config.online_status, True)
          self.mqttc.publish_topic(config.topic, data, False)
          exit.wait(config.seconds_between_readings)
 
